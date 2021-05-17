@@ -3,7 +3,7 @@
 set -e
 
 EMSDK_ENV=~/emsdk/emsdk_env.sh
-EMSDK_VERSION=2.0.22
+EMSDK_VERSION=2.0.31
 
 ~/emsdk/emsdk install $EMSDK_VERSION
 ~/emsdk/emsdk activate $EMSDK_VERSION
@@ -11,18 +11,19 @@ EMSDK_VERSION=2.0.22
 THIS_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 cd "$THIS_DIR"
 
-ZLIB_VERSION=1.2.11
+ZLIB_VERSION=2.0.5
 LIBZIP_VERSION=1.5.2
 
 LIBZIP_REPO=arcanis/libzip
 
 [[ -f ./zlib-"$ZLIB_VERSION"/libz.a ]] || (
-  if ! [[ -e zlib-"$ZLIB_VERSION".tar.gz ]]; then
-    wget -O ./zlib-"$ZLIB_VERSION".tar.gz "http://zlib.net/zlib-$ZLIB_VERSION.tar.gz"
+  if ! [[ -e zlib-"$ZLIB_VERSION".zip ]]; then
+    wget -O ./zlib-"$ZLIB_VERSION".zip "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/$ZLIB_VERSION.zip"
   fi
 
   if ! [[ -e zlib-"$ZLIB_VERSION" ]]; then
-    tar xvf ./zlib-"$ZLIB_VERSION".tar.gz
+    unzip ./zlib-"$ZLIB_VERSION".zip
+    mv ./zlib-ng-"$ZLIB_VERSION" ./zlib-"$ZLIB_VERSION"
   fi
 
   cd "$THIS_DIR"/zlib-"$ZLIB_VERSION"
@@ -32,10 +33,9 @@ LIBZIP_REPO=arcanis/libzip
   mkdir -p build
   cd build
 
-  emcmake cmake -Wno-dev \
-    ..
+  CHOST="wasm32" CFLAGS="-static" LDFLAGS="-static" emconfigure ../configure --warn --zlib-compat --static
 
-  emmake make zlibstatic
+  make -j2
 
   mkdir -p local/lib local/include
   cp libz.a local/lib/
