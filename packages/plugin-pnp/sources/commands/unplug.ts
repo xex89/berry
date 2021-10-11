@@ -1,10 +1,10 @@
-import {BaseCommand, WorkspaceRequiredError}                                                                               from '@yarnpkg/cli';
-import {Cache, Configuration, Project, StreamReport, Package, MessageName, formatUtils, LocatorHash, Workspace, miscUtils} from '@yarnpkg/core';
-import {structUtils, semverUtils}                                                                                          from '@yarnpkg/core';
-import {Command, Option, Usage, UsageError}                                                                                from 'clipanion';
-import micromatch                                                                                                          from 'micromatch';
+import {BaseCommand, WorkspaceRequiredError}                                                                                            from '@yarnpkg/cli';
+import {Cache, Configuration, Project, StreamReport, Package, MessageName, formatUtils, LocatorHash, Workspace, miscUtils, ThrowReport} from '@yarnpkg/core';
+import {structUtils, semverUtils}                                                                                                       from '@yarnpkg/core';
+import {Command, Option, Usage, UsageError}                                                                                             from 'clipanion';
+import micromatch                                                                                                                       from 'micromatch';
 
-import * as pnpUtils                                                                                                       from '../pnpUtils';
+import * as pnpUtils                                                                                                                    from '../pnpUtils';
 
 // eslint-disable-next-line arca/no-default-export
 export default class UnplugCommand extends BaseCommand {
@@ -74,7 +74,14 @@ export default class UnplugCommand extends BaseCommand {
     if (configuration.get(`nodeLinker`) !== `pnp`)
       throw new UsageError(`This command can only be used if the \`nodeLinker\` option is set to \`pnp\``);
 
-    await project.restoreInstallState();
+    await project.restoreInstallState({
+      restoreResolutions: false,
+    });
+
+    await project.resolveEverything({
+      cache,
+      report: new ThrowReport(),
+    });
 
     const unreferencedPatterns = new Set(this.patterns);
 

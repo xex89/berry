@@ -20,6 +20,7 @@ Yarn now accepts sponsorships! Please give a look at our [OpenCollective](https:
 - The cache is now fully atomic when moving files across devices and in general more efficient.
 - The PnP patch now picks up changes to the `fs` module, allowing users to patch it.
 - When using PnP, `require.resolve('pnpapi')` will be handled correctly even when using `exports`.
+- Running `unplug` will no longer unlock descriptors and update your dependencies if you recently switched branches with different versions.
 
 ### Installs
 
