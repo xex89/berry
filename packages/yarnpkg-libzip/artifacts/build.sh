@@ -33,7 +33,7 @@ LIBZIP_REPO=arcanis/libzip
   mkdir -p build
   cd build
 
-  CHOST="wasm32" CFLAGS="-static" LDFLAGS="-static" emconfigure ../configure --warn --zlib-compat --static
+  CHOST="wasm32" CFLAGS="-static -msimd128" LDFLAGS="-static -msimd128" emconfigure ../configure --warn --zlib-compat --static
 
   make -j2
 
@@ -121,5 +121,5 @@ build() {
   echo "Built wasm ($name)"
 }
 
-build libzipSync -s BINARYEN_ASYNC_COMPILATION=0
-build libzipAsync -s BINARYEN_ASYNC_COMPILATION=1
+build libzipSync -s BINARYEN_ASYNC_COMPILATION=0 -msimd128
+build libzipAsync -s BINARYEN_ASYNC_COMPILATION=1 -msimd128
