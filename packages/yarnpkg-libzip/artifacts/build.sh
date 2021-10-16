@@ -33,7 +33,7 @@ LIBZIP_REPO=arcanis/libzip
   mkdir -p build
   cd build
 
-  CHOST="wasm32" CFLAGS="-static -msimd128" LDFLAGS="-static -msimd128" emconfigure ../configure --warn --zlib-compat --static
+  CHOST="arm" CFLAGS="-static -msimd128" LDFLAGS="-static -msimd128" emconfigure ../configure --warn --zlib-compat --static
 
   make -j2
 
