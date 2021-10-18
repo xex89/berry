@@ -27,13 +27,14 @@ LIBZIP_REPO=arcanis/libzip
   fi
 
   cd "$THIS_DIR"/zlib-"$ZLIB_VERSION"
+  cp "$THIS_DIR/x86.c" ""$THIS_DIR"/zlib-"$ZLIB_VERSION"/arch/x86/x86.c"
 
   source "$EMSDK_ENV"
 
   mkdir -p build
   cd build
 
-  CHOST="arm" CFLAGS="-static -msimd128" LDFLAGS="-static -msimd128" emconfigure ../configure --warn --zlib-compat --static
+  CHOST="x86_64" CFLAGS="-static -msimd128" LDFLAGS="-static -msimd128" emconfigure ../configure --warn --zlib-compat --static
 
   make -j2
 
