@@ -1,8 +1,8 @@
-import {Descriptor, FetchResult, formatUtils, Installer, InstallPackageExtraApi, Linker, LinkOptions, LinkType, Locator, LocatorHash, Manifest, MessageName, MinimalLinkOptions, Package, Project, structUtils} from '@yarnpkg/core';
-import {Dirent, Filename, PortablePath, ppath, xfs}                                                                                                                                                             from '@yarnpkg/fslib';
-import {jsInstallUtils}                                                                                                                                                                                         from '@yarnpkg/plugin-pnp';
-import {UsageError}                                                                                                                                                                                             from 'clipanion';
-import pLimit                                                                                                                                                                                                   from 'p-limit';
+import {Descriptor, FetchResult, formatUtils, Installer, Linker, LinkOptions, LinkType, Locator, LocatorHash, Manifest, MessageName, MinimalLinkOptions, Package, Project, structUtils} from '@yarnpkg/core';
+import {Dirent, Filename, PortablePath, ppath, xfs}                                                                                                                                     from '@yarnpkg/fslib';
+import {jsInstallUtils}                                                                                                                                                                 from '@yarnpkg/plugin-pnp';
+import {UsageError}                                                                                                                                                                     from 'clipanion';
+import pLimit                                                                                                                                                                           from 'p-limit';
 
 export type PnpmCustomData = {
   locatorByPath: Map<string, string>;
@@ -72,16 +72,16 @@ class PnpmInstaller implements Installer {
     this.customData = customData;
   }
 
-  async installPackage(pkg: Package, fetchResult: FetchResult, api: InstallPackageExtraApi) {
+  async installPackage(pkg: Package, fetchResult: FetchResult) {
     switch (pkg.linkType) {
-      case LinkType.SOFT: return this.installPackageSoft(pkg, fetchResult, api);
-      case LinkType.HARD: return this.installPackageHard(pkg, fetchResult, api);
+      case LinkType.SOFT: return this.installPackageSoft(pkg, fetchResult);
+      case LinkType.HARD: return this.installPackageHard(pkg, fetchResult);
     }
 
     throw new Error(`Assertion failed: Unsupported package link type`);
   }
 
-  async installPackageSoft(pkg: Package, fetchResult: FetchResult, api: InstallPackageExtraApi) {
+  async installPackageSoft(pkg: Package, fetchResult: FetchResult) {
     const pkgPath = ppath.resolve(fetchResult.packageFs.getRealPath(), fetchResult.prefixPath);
     this.packageLocations.set(pkg.locatorHash, pkgPath);
 
@@ -91,13 +91,13 @@ class PnpmInstaller implements Installer {
     };
   }
 
-  async installPackageHard(pkg: Package, fetchResult: FetchResult, api: InstallPackageExtraApi) {
+  async installPackageHard(pkg: Package, fetchResult: FetchResult) {
     const pkgPath = getPackageLocation(pkg, {project: this.opts.project});
 
     this.customData.locatorByPath.set(pkgPath, structUtils.stringifyLocator(pkg));
     this.packageLocations.set(pkg.locatorHash, pkgPath);
 
-    api.holdFetchResult(this.asyncActions.set(pkg.locatorHash, async () => {
+    this.asyncActions.set(pkg.locatorHash, async () => {
       await xfs.mkdirPromise(pkgPath, {recursive: true});
 
       // Copy the package source into the <root>/n_m/.store/<hash> directory, so
@@ -106,7 +106,7 @@ class PnpmInstaller implements Installer {
         baseFs: fetchResult.packageFs,
         overwrite: false,
       });
-    }));
+    });
 
     const isVirtual = structUtils.isVirtualLocator(pkg);
     const devirtualizedLocator: Locator = isVirtual ? structUtils.devirtualizeLocator(pkg) : pkg;

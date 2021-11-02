@@ -60,6 +60,14 @@ export function makeEmptyArchive() {
   ]);
 }
 
+const zipFsRegistry = new FinalizationRegistry<{libzip: Libzip, zip: number}>(({libzip, zip}) => {
+  setImmediate(() => {
+    try {
+      libzip.discard(zip);
+    } catch {}
+  })?.unref?.();
+});
+
 export class ZipFS extends BasePortableFakeFS {
   private readonly libzip: Libzip;
 
@@ -195,6 +203,8 @@ export class ZipFS extends BasePortableFakeFS {
       throw this.makeLibzipError(this.libzip.getError(this.zip));
 
     this.ready = true;
+
+    zipFsRegistry.register(this, {libzip: this.libzip, zip: this.zip});
   }
 
   makeLibzipError(error: number) {

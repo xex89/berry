@@ -124,10 +124,6 @@ export async function loadPatchFiles(parentLocator: Locator | null, patchPaths: 
     ? {packageFs: new CwdFS(PortablePath.root), prefixPath: ppath.relative(PortablePath.root, parentFetch.localPath)}
     : parentFetch;
 
-  // Discard the parent fs unless we really need it to access the files
-  if (parentFetch && parentFetch !== effectiveParentFetch && parentFetch.releaseFs)
-    parentFetch.releaseFs();
-
   // First we obtain the specification for all the patches that we'll have to
   // apply to the original package.
   const patchFiles = await miscUtils.releaseAfterUseAsync(async () => {

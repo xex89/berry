@@ -52,21 +52,15 @@ export async function makeArchiveFromLocator(locator: Locator, {protocol, fetchO
     ? {packageFs: new CwdFS(PortablePath.root), prefixPath: ppath.relative(PortablePath.root, parentFetch.localPath)}
     : parentFetch;
 
-  // Discard the parent fs unless we really need it to access the files
-  if (parentFetch !== effectiveParentFetch && parentFetch.releaseFs)
-    parentFetch.releaseFs();
-
   const sourceFs = effectiveParentFetch.packageFs;
   const sourcePath = ppath.join(effectiveParentFetch.prefixPath, path);
 
-  return await miscUtils.releaseAfterUseAsync(async () => {
-    return await tgzUtils.makeArchiveFromDirectory(sourcePath, {
-      baseFs: sourceFs,
-      prefixPath: structUtils.getIdentVendorPath(locator),
-      compressionLevel: fetchOptions.project.configuration.get(`compressionLevel`),
-      inMemory,
-    });
-  }, effectiveParentFetch.releaseFs);
+  return await tgzUtils.makeArchiveFromDirectory(sourcePath, {
+    baseFs: sourceFs,
+    prefixPath: structUtils.getIdentVendorPath(locator),
+    compressionLevel: fetchOptions.project.configuration.get(`compressionLevel`),
+    inMemory,
+  });
 }
 
 export async function makeBufferFromLocator(locator: Locator, {protocol, fetchOptions}: {protocol: string, fetchOptions: FetchOptions}) {
