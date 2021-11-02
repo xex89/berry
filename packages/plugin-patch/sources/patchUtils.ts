@@ -126,32 +126,30 @@ export async function loadPatchFiles(parentLocator: Locator | null, patchPaths: 
 
   // First we obtain the specification for all the patches that we'll have to
   // apply to the original package.
-  const patchFiles = await miscUtils.releaseAfterUseAsync(async () => {
-    return await Promise.all(patchPaths.map(async patchPath => {
-      const flags = extractPatchFlags(patchPath);
+  const patchFiles = await Promise.all(patchPaths.map(async patchPath => {
+    const flags = extractPatchFlags(patchPath);
 
-      const source = await visitPatchPath({
-        onAbsolute: async () => {
-          return await xfs.readFilePromise(patchPath, `utf8`);
-        },
+    const source = await visitPatchPath({
+      onAbsolute: async () => {
+        return await xfs.readFilePromise(patchPath, `utf8`);
+      },
 
-        onRelative: async () => {
-          if (effectiveParentFetch === null)
-            throw new Error(`Assertion failed: The parent locator should have been fetched`);
+      onRelative: async () => {
+        if (effectiveParentFetch === null)
+          throw new Error(`Assertion failed: The parent locator should have been fetched`);
 
-          return await effectiveParentFetch.packageFs.readFilePromise(ppath.join(effectiveParentFetch.prefixPath, patchPath), `utf8`);
-        },
+        return await effectiveParentFetch.packageFs.readFilePromise(ppath.join(effectiveParentFetch.prefixPath, patchPath), `utf8`);
+      },
 
-        onBuiltin: async name => {
-          return await opts.project.configuration.firstHook((hooks: PatchHooks) => {
-            return hooks.getBuiltinPatch;
-          }, opts.project, name);
-        },
-      }, patchPath);
+      onBuiltin: async name => {
+        return await opts.project.configuration.firstHook((hooks: PatchHooks) => {
+          return hooks.getBuiltinPatch;
+        }, opts.project, name);
+      },
+    }, patchPath);
 
-      return {...flags, source};
-    }));
-  });
+    return {...flags, source};
+  }));
 
   // Normalizes the line endings to prevent mismatches when cloning a
   // repository on Windows systems (the default settings for Git are to
