@@ -204,7 +204,7 @@ export class ZipFS extends BasePortableFakeFS {
 
     this.ready = true;
 
-    zipFsRegistry.register(this, {libzip: this.libzip, zip: this.zip});
+    zipFsRegistry.register(this, {libzip: this.libzip, zip: this.zip}, this);
   }
 
   makeLibzipError(error: number) {
@@ -304,6 +304,8 @@ export class ZipFS extends BasePortableFakeFS {
       throw errors.EBUSY(`archive closed, close`);
 
     unwatchAllFiles(this);
+
+    zipFsRegistry.unregister(this);
   }
 
   saveAndClose() {

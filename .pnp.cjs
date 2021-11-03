@@ -48244,6 +48244,18 @@ function toUnixTimestamp(time) {
 function makeEmptyArchive() {
   return Buffer.from([0x50, 0x4B, 0x05, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
 }
+const zipFsRegistry = new FinalizationRegistry(({
+  libzip,
+  zip
+}) => {
+  var _a, _b;
+
+  (_b = (_a = setImmediate(() => {
+    try {
+      libzip.discard(zip);
+    } catch {}
+  })) === null || _a === void 0 ? void 0 : _a.unref) === null || _b === void 0 ? void 0 : _b.call(_a);
+});
 class ZipFS extends BasePortableFakeFS {
   constructor(source, opts) {
     super();
@@ -48347,6 +48359,10 @@ class ZipFS extends BasePortableFakeFS {
     this.symlinkCount = this.libzip.ext.countSymlinks(this.zip);
     if (this.symlinkCount === -1) throw this.makeLibzipError(this.libzip.getError(this.zip));
     this.ready = true;
+    zipFsRegistry.register(this, {
+      libzip: this.libzip,
+      zip: this.zip
+    }, this);
   }
 
   makeLibzipError(error) {
@@ -48418,6 +48434,7 @@ class ZipFS extends BasePortableFakeFS {
   prepareClose() {
     if (!this.ready) throw EBUSY(`archive closed, close`);
     unwatchAllFiles(this);
+    zipFsRegistry.unregister(this);
   }
 
   saveAndClose() {
