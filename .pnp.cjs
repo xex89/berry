@@ -48244,7 +48244,7 @@ function toUnixTimestamp(time) {
 function makeEmptyArchive() {
   return Buffer.from([0x50, 0x4B, 0x05, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
 }
-const zipFsRegistry = new FinalizationRegistry(({
+const zipFsRegistry = typeof FinalizationRegistry !== `undefined` ? new FinalizationRegistry(({
   libzip,
   zip
 }) => {
@@ -48255,7 +48255,7 @@ const zipFsRegistry = new FinalizationRegistry(({
       libzip.discard(zip);
     } catch {}
   })) === null || _a === void 0 ? void 0 : _a.unref) === null || _b === void 0 ? void 0 : _b.call(_a);
-});
+}) : null;
 class ZipFS extends BasePortableFakeFS {
   constructor(source, opts) {
     super();
@@ -48359,7 +48359,7 @@ class ZipFS extends BasePortableFakeFS {
     this.symlinkCount = this.libzip.ext.countSymlinks(this.zip);
     if (this.symlinkCount === -1) throw this.makeLibzipError(this.libzip.getError(this.zip));
     this.ready = true;
-    zipFsRegistry.register(this, {
+    zipFsRegistry === null || zipFsRegistry === void 0 ? void 0 : zipFsRegistry.register(this, {
       libzip: this.libzip,
       zip: this.zip
     }, this);
@@ -48434,7 +48434,7 @@ class ZipFS extends BasePortableFakeFS {
   prepareClose() {
     if (!this.ready) throw EBUSY(`archive closed, close`);
     unwatchAllFiles(this);
-    zipFsRegistry.unregister(this);
+    zipFsRegistry === null || zipFsRegistry === void 0 ? void 0 : zipFsRegistry.unregister(this);
   }
 
   saveAndClose() {
